@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Starter Tournament — MLBB</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0b1020;color:#fff}
+.hero{padding:50px 18px;text-align:center;background:linear-gradient(150deg,#18244a,#080b15)}
+.wrap{max-width:850px;margin:auto;padding:18px}
+.card{background:#151d32;border:1px solid #2c3755;border-radius:15px;padding:20px;margin:16px 0}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{font-size:24px;font-weight:bold;margin-top:7px}.muted{color:#b7c0d7}
+.gold{color:#ffd45a}h1{font-size:42px}.btn{display:inline-block;padding:13px 18px;margin:6px;border-radius:10px;text-decoration:none;font-weight:bold;border:0;cursor:pointer}
+.primary{background:#ffd45a;color:#111}.dark{background:#252f49;color:#fff}
+input,textarea{width:100%;padding:11px;margin:6px 0 12px;border-radius:8px;border:1px solid #46516f;background:#0c1222;color:#fff;box-sizing:border-box}
+#editor{display:none}
+@media(max-width:600px){h1{font-size:34px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+<div class="wrap">
+<div>🎮 MLBB • 5v5</div>
+<h1 id="showName">STARTER TOURNAMENT</h1>
+<p class="muted">Your first step into competitive Mobile Legends.</p>
+<a class="btn primary" id="regBtn" href="#register">REGISTER YOUR TEAM</a>
+<button id="editBtn" class="btn dark" onclick="toggleEditor()" style="display:none">✏️ EDIT TOURNAMENT</button>
+</div>
+</section>
+
+<div class="wrap">
+
+<section id="editor" class="card">
+<h2>✏️ Edit Tournament</h2>
+<p class="muted">Change the details below, then press Save. The page updates immediately.</p>
+<label>Tournament name</label><input id="eName">
+<label>Game</label><input id="eGame">
+<label>Format</label><input id="eFormat">
+<label>Team slots</label><input id="eTeams">
+<label>Entry fee</label><input id="eFee">
+<label>1st prize</label><input id="ePrize">
+<label>Host</label><input id="eHost">
+<label>Date & time</label><input id="eDate">
+<label>Registration / Google Form link</label><input id="eLink" placeholder="https://forms.google.com/...">
+<label>Tournament rules</label><textarea id="eRules" rows="12"></textarea>
+<button class="btn primary" onclick="saveData()">SAVE CHANGES</button>
+<button class="btn dark" onclick="toggleEditor()">CLOSE</button>
+</section>
+
+<section class="grid">
+<div class="card"><div class="muted">Entry Fee</div><div class="stat" id="showFee">₹100 / Team</div></div>
+<div class="card"><div class="muted">1st Prize</div><div class="stat gold" id="showPrize">₹2,000</div></div>
+<div class="card"><div class="muted">Team Slots</div><div class="stat" id="showTeams">24 Teams</div></div>
+<div class="card"><div class="muted">Host</div><div class="stat" id="showHost">Gai</div></div>
+</section>
+
+<section class="card">
+<h2>🏆 Tournament Info</h2>
+<p class="muted">Game: <span id="showGame">Mobile Legends: Bang Bang</span></p>
+<p class="muted">Format: <span id="showFormat">5v5</span></p>
+<p class="muted">Date & time: <span id="showDate">To be announced</span></p>
+</section>
+
+<section class="card" id="rules">
+<h2>📜 Tournament Rules</h2>
+<ol id="showRules"></ol>
+</section>
+
+<section class="card" id="register" style="text-align:center">
+<h2>📝 Registration</h2>
+<p class="muted">Register your team using the button below.</p>
+<a class="btn primary" id="regBtn2" href="#" target="_blank">REGISTER YOUR TEAM</a>
+<p id="regNote" class="muted">Registration link has not been added yet.</p>
+</section>
+
+<section class="card">
+<h2>⚔️ Match Bracket</h2>
+<p class="muted">The bracket will be published after registration closes.</p>
+</section>
+
+<footer class="muted" style="text-align:center;padding:25px">
+<span id="footName">Starter Tournament</span> • Hosted by <span id="footHost">Gai</span><br><button class="btn dark" type="button" onclick="openHostLogin()" style="font-size:12px;padding:8px 12px;margin-top:12px">HOST LOGIN</button>
+</footer>
+</div>
+
+<script>
+const defaults={
+name:"STARTER TOURNAMENT",game:"Mobile Legends: Bang Bang",format:"5v5",
+teams:"24 Teams",fee:"₹100 / Team",prize:"₹2,000",host:"Gai",
+date:"To be announced",link:"",
+rules:[
+"Each team must register its players before the registration deadline.",
+"Only registered players may participate. Substitutions require host approval.",
+"Teams must join the designated lobby on time. Late or absent teams may forfeit.",
+"Cheats, scripts, map hacks, exploits, modified clients and unfair advantages are prohibited.",
+"Players must use their registered MLBB accounts and provide correct ID/server information.",
+"Abusive, threatening or deliberately disruptive behavior may result in disqualification.",
+"Disconnects and technical problems must be reported to the host immediately.",
+"Disputes should be supported with screenshots, recordings or other evidence when possible.",
+"The host may disqualify teams for cheating, false information or serious misconduct.",
+"Prize money will be paid through a payment method agreed with the host.",
+"The host's decision on tournament disputes is final. Rules may be clarified before matches."
+]};
+let data=JSON.parse(localStorage.getItem("starterTournament"))||defaults;
+
+function render(){
+showName.textContent=data.name;showFee.textContent=data.fee;showPrize.textContent=data.prize;
+showTeams.textContent=data.teams;showHost.textContent=data.host;showGame.textContent=data.game;
+showFormat.textContent=data.format;showDate.textContent=data.date;footName.textContent=data.name;footHost.textContent=data.host;
+showRules.innerHTML=data.rules.map(x=>"<li>"+x+"</li>").join("");
+[eName,eGame,eFormat,eTeams,eFee,ePrize,eHost,eDate,eLink,eRules].forEach(x=>{});
+eName.value=data.name;eGame.value=data.game;eFormat.value=data.format;eTeams.value=data.teams;
+eFee.value=data.fee;ePrize.value=data.prize;eHost.value=data.host;eDate.value=data.date;eLink.value=data.link;
+eRules.value=data.rules.join("\n");
+if(data.link){regBtn.href=data.link;regBtn2.href=data.link;regNote.textContent="Registration link is active."}
+else{regBtn.href="#register";regBtn2.removeAttribute("href");regNote.textContent="Add your Google Form link using Edit Tournament."}
+}
+
+const HOST_PASSWORD = "GaiHost2026";
+
+function openHostLogin(){
+  document.getElementById("hostLoginBox").style.display="block";
+  document.getElementById("hostPassword").value="";
+  document.getElementById("hostLoginMsg").textContent="";
+  document.getElementById("hostPassword").focus();
+  document.getElementById("hostLoginBox").scrollIntoView({behavior:"smooth"});
+}
+
+function closeHostLogin(){
+  document.getElementById("hostLoginBox").style.display="none";
+}
+
+function hostLogin(){
+  const password=document.getElementById("hostPassword").value;
+  if(password===HOST_PASSWORD){
+    sessionStorage.setItem("starterHost","1");
+    document.getElementById("editBtn").style.display="inline-block";
+    closeHostLogin();
+    alert("Host mode enabled!");
+  }else{
+    document.getElementById("hostLoginMsg").textContent="❌ Wrong password.";
+  }
+}
+
+function toggleEditor(){
+  if(sessionStorage.getItem("starterHost")!=="1"){
+    openHostLogin();
+    return;
+  }
+  const ed=document.getElementById("editor");
+  ed.style.display=ed.style.display==="block"?"none":"block";
+  window.scrollTo(0,0);
+}
+
+function checkHost(){
+  if(sessionStorage.getItem("starterHost")==="1"){
+    document.getElementById("editBtn").style.display="inline-block";
+  }
+}
+
+function saveData(){
+data={name:eName.value,game:eGame.value,format:eFormat.value,teams:eTeams.value,fee:eFee.value,prize:ePrize.value,host:eHost.value,date:eDate.value,link:eLink.value,rules:eRules.value.split("\n").filter(x=>x.trim())};
+localStorage.setItem("starterTournament",JSON.stringify(data));render();checkHost();editor.style.display="none";alert("Tournament updated!");
+}
+render();checkHost();
+</script>
+
+<div id="hostLoginBox" class="card" style="display:none;max-width:500px;margin:20px auto">
+  <h2>🔐 Host Login</h2>
+  <p class="muted">Host access only.</p>
+  <input id="hostPassword" type="password" placeholder="Host password">
+  <button class="btn primary" type="button" onclick="hostLogin()">LOGIN</button>
+  <button class="btn dark" type="button" onclick="closeHostLogin()">CANCEL</button>
+  <p id="hostLoginMsg" class="muted"></p>
+</div>
+
+</body>
+</html>
